@@ -283,8 +283,8 @@
     #empty-state p  { font-size: .85rem; line-height: 1.5; max-width: 280px; }
 
     .suggestion-chips {
-      display: flex; flex-wrap: wrap; gap: .5rem;
-      justify-content: center; margin-top: .5rem;
+      display: flex; flex-direction: column; gap: .5rem;
+      align-items: center; margin-top: .5rem; width: 100%;
     }
 
     .chip {
@@ -296,6 +296,7 @@
       cursor: pointer;
       color: var(--text);
       transition: border-color .15s, background .15s;
+      text-align: center;
     }
 
     .chip:hover {
@@ -337,6 +338,8 @@
       max-height: 140px;
       line-height: 1.5;
       padding: 0;
+      display: block;
+      overflow: hidden;
     }
 
     #user-input::placeholder { color: var(--muted); }
@@ -382,7 +385,7 @@
 <div id="gate">
   <div class="gate-card">
     <div class="gate-logo">
-      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.93V18a1 1 0 0 1-2 0v-1.07A8 8 0 0 1 4.07 11H6a1 1 0 0 1 0 2 6 6 0 0 0 5 5.92zM11 9.07A8 8 0 0 1 4.07 3H6a6 6 0 0 0 5-5.92V2a1 1 0 0 1 2 0v1.07A8 8 0 0 1 19.93 11H18a1 1 0 0 1 0-2 6 6 0 0 0-5-5.92z"/></svg>
+      <svg viewBox="0 0 24 24" fill="white"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
     </div>
     <h1>Draft EIR Agent</h1>
     <p>Enter your team password to access the assistant.</p>
@@ -412,9 +415,9 @@
       <h2>How can I help?</h2>
       <p>Ask me anything about your documents or any general question.</p>
       <div class="suggestion-chips">
-        <span class="chip" onclick="useChip(this)">Summarise key documents</span>
-        <span class="chip" onclick="useChip(this)">What's our policy on X?</span>
-        <span class="chip" onclick="useChip(this)">Draft an email</span>
+        <span class="chip" onclick="useChip(this)">Summarize the fifth table in the Transportation Chapter</span>
+        <span class="chip" onclick="useChip(this)">How many mitigation measures do the DEIR chapters include?</span>
+        <span class="chip" onclick="useChip(this)">Do you see any potential spelling errors in the Air Quality Chapter?</span>
       </div>
     </div>
   </div>
