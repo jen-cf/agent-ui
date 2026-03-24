@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Team Assistant</title>
+  <title>Draft EIR Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -14,11 +14,11 @@
       --surface:   #18181c;
       --surface2:  #222228;
       --border:    #2e2e38;
-      --accent:    #7c6af7;
-      --accent-dim:#3d3480;
+      --accent:    #1a56db;
+      --accent-dim:#1e3a6e;
       --text:      #e8e8f0;
       --muted:     #7a7a90;
-      --user-bg:   #7c6af7;
+      --user-bg:   #1a56db;
       --user-text: #ffffff;
       --bot-bg:    #222228;
       --bot-text:  #e8e8f0;
@@ -270,14 +270,14 @@
     }
 
     #empty-state .big-icon {
-      width: 48px; height: 48px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      width: 56px; height: 56px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
     }
 
-    #empty-state .big-icon svg { width: 22px; height: 22px; }
+    #empty-state .big-icon svg { width: 26px; height: 26px; }
 
     #empty-state h2 { font-size: 1rem; font-weight: 500; color: var(--text); }
     #empty-state p  { font-size: .85rem; line-height: 1.5; max-width: 280px; }
@@ -314,12 +314,12 @@
 
     .input-wrap {
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       gap: .75rem;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: .6rem .6rem .6rem 1rem;
+      padding: .5rem .5rem .5rem 1rem;
       transition: border-color .2s;
     }
 
@@ -336,7 +336,7 @@
       resize: none;
       max-height: 140px;
       line-height: 1.5;
-      padding: .15rem 0;
+      padding: 0;
     }
 
     #user-input::placeholder { color: var(--muted); }
@@ -356,6 +356,13 @@
     #send-btn:active { transform: scale(.93); }
     #send-btn:disabled { opacity: .35; cursor: default; }
     #send-btn svg { width: 16px; height: 16px; fill: white; }
+
+    .input-hint {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: .5rem;
+      padding-left: .25rem;
+    }
 
     /* ── Animations ───────────────────────────── */
     @keyframes fadeUp {
@@ -377,7 +384,7 @@
     <div class="gate-logo">
       <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.93V18a1 1 0 0 1-2 0v-1.07A8 8 0 0 1 4.07 11H6a1 1 0 0 1 0 2 6 6 0 0 0 5 5.92zM11 9.07A8 8 0 0 1 4.07 3H6a6 6 0 0 0 5-5.92V2a1 1 0 0 1 2 0v1.07A8 8 0 0 1 19.93 11H18a1 1 0 0 1 0-2 6 6 0 0 0-5-5.92z"/></svg>
     </div>
-    <h1>Team Assistant</h1>
+    <h1>Draft EIR Agent</h1>
     <p>Enter your team password to access the assistant.</p>
     <label for="pw-input">Password</label>
     <input type="password" id="pw-input" placeholder="••••••••" autofocus
@@ -391,15 +398,15 @@
 <div id="app">
   <header>
     <div class="header-dot"></div>
-    <h1>Team Assistant</h1>
+    <h1>Draft EIR Agent</h1>
     <span class="header-badge">Claude</span>
   </header>
 
   <div id="messages">
     <div id="empty-state">
       <div class="big-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M8 10h8M8 14h5M12 3c-4.97 0-9 3.58-9 8 0 1.87.67 3.6 1.79 4.99L3 21l4.7-1.5A9.27 9.27 0 0 0 12 21c4.97 0 9-3.58 9-8s-4.03-8-9-8z" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 24 24" fill="white">
+          <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
         </svg>
       </div>
       <h2>How can I help?</h2>
@@ -414,7 +421,7 @@
 
   <div id="input-bar">
     <div class="input-wrap">
-      <textarea id="user-input" rows="1" placeholder="Message the assistant…"
+      <textarea id="user-input" rows="1" placeholder="Type here"
         oninput="autoResize(this)"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea>
       <button id="send-btn" onclick="sendMessage()" title="Send">
@@ -426,11 +433,13 @@
 </div>
 
 <script>
+  // *** CHANGE THESE TWO VALUES ***
   const BACKEND_URL = "https://agent-backend.onrender.com";
   const PASSWORD    = "mixeduse";
 
   let history = [];
 
+  // ── Auth ──────────────────────────────────────
   function checkPassword() {
     const val = document.getElementById("pw-input").value;
     if (val === PASSWORD) {
@@ -445,11 +454,13 @@
     }
   }
 
+  // ── Textarea auto-resize ──────────────────────
   function autoResize(el) {
     el.style.height = "auto";
     el.style.height = Math.min(el.scrollHeight, 140) + "px";
   }
 
+  // ── Suggestion chips ──────────────────────────
   function useChip(el) {
     const input = document.getElementById("user-input");
     input.value = el.textContent;
@@ -457,6 +468,7 @@
     input.focus();
   }
 
+  // ── Render a message row ──────────────────────
   function addMessage(role, content) {
     const empty = document.getElementById("empty-state");
     if (empty) empty.remove();
@@ -484,6 +496,7 @@
     return { row, bubble };
   }
 
+  // ── Send ──────────────────────────────────────
   async function sendMessage() {
     const input = document.getElementById("user-input");
     const btn   = document.getElementById("send-btn");
@@ -495,7 +508,7 @@
     btn.disabled = true;
 
     addMessage("user", text);
-    const { row: typingRow } = addMessage("assistant", "typing");
+    const { row: typingRow, bubble: typingBubble } = addMessage("assistant", "typing");
 
     try {
       const res = await fetch(`${BACKEND_URL}/chat`, {
