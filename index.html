@@ -239,17 +239,29 @@
     /* Markdown rendering */
     .bubble.bot p { margin-bottom: .6rem; }
     .bubble.bot p:last-child { margin-bottom: 0; }
-    .bubble.bot ul, .bubble.bot ol { padding-left: 1.25rem; margin-bottom: .6rem; margin-top: .2rem; }
+    .bubble.bot ul, .bubble.bot ol {
+      padding-left: 1.4rem;
+      margin-bottom: .6rem;
+      margin-top: .2rem;
+    }
+    .bubble.bot ul ul, .bubble.bot ol ol,
+    .bubble.bot ul ol, .bubble.bot ol ul {
+      padding-left: 1.4rem;
+      margin-top: .2rem;
+      margin-bottom: .2rem;
+    }
     .bubble.bot li { margin-bottom: .25rem; }
+    .bubble.bot li > ul, .bubble.bot li > ol { margin-top: .2rem; }
     .bubble.bot strong { font-weight: 600; color: #fff; }
     .bubble.bot h1, .bubble.bot h2, .bubble.bot h3 {
       font-weight: 600; color: #fff;
-      margin-top: 1.1rem; margin-bottom: .35rem;
-      padding-left: 0;
+      margin-top: 1.4rem; margin-bottom: .35rem;
+      padding-left: 0; text-indent: 0;
     }
     .bubble.bot h1 { font-size: 1rem; }
     .bubble.bot h2 { font-size: .95rem; }
     .bubble.bot h3 { font-size: .9rem; }
+    .bubble.bot > p:first-child > strong:only-child,
     .bubble.bot h1:first-child,
     .bubble.bot h2:first-child,
     .bubble.bot h3:first-child { margin-top: 0; }
@@ -597,19 +609,101 @@
   }
 
   function renderMarkdown(text) {
+    const lines = text.split('\n');
+    let html = '';
+    let inUl = false, inOl = false, inSubUl = false;
+    let ulDepth = 0;
+
+    function closeLists() {
+      if (inSubUl) { html += '</ul>'; inSubUl = false; }
+      if (inUl)    { html += '</ul>'; inUl = false; }
+      if (inOl)    { html += '</ol>'; inOl = false; }
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+
+      // Escape HTML
+      line = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+      // Headers
+      if (/^### (.+)/.test(line)) {
+        closeLists();
+        html += `<h3>${applyInline(line.replace(/^### /,''))}</h3>`;
+        continue;
+      }
+      if (/^## (.+)/.test(line)) {
+        closeLists();
+        html += `<h2>${applyInline(line.replace(/^## /,''))}</h2>`;
+        continue;
+      }
+      if (/^# (.+)/.test(line)) {
+        closeLists();
+        html += `<h1>${applyInline(line.replace(/^# /,''))}</h1>`;
+        continue;
+      }
+
+      // Numbered list items used as bold section headers e.g. "1. **Title**"
+      const numberedHeader = line.match(/^\d+\.\s+\*\*(.+?)\*\*/);
+      if (numberedHeader) {
+        closeLists();
+        const rest = line.replace(/^\d+\.\s+\*\*(.+?)\*\*/, '').trim();
+        html += `<h3>${numberedHeader[1]}${rest ? ' ' + applyInline(rest) : ''}</h3>`;
+        continue;
+      }
+
+      // Sub-bullets (indented with spaces or tab)
+      const subBullet = line.match(/^(?:   +|\t)[-*] (.+)/);
+      if (subBullet) {
+        if (!inUl && !inOl) { html += '<ul>'; inUl = true; }
+        if (!inSubUl) { html += '<ul>'; inSubUl = true; }
+        html += `<li>${applyInline(subBullet[1])}</li>`;
+        continue;
+      }
+
+      // Close sub-list if we're back to top-level bullet
+      if (inSubUl && /^[-*] /.test(line)) {
+        html += '</ul>'; inSubUl = false;
+      }
+
+      // Top-level bullets
+      const bullet = line.match(/^[-*] (.+)/);
+      if (bullet) {
+        if (inOl) { html += '</ol>'; inOl = false; }
+        if (!inUl) { html += '<ul>'; inUl = true; }
+        html += `<li>${applyInline(bullet[1])}</li>`;
+        continue;
+      }
+
+      // Numbered list
+      const numbered = line.match(/^\d+\. (.+)/);
+      if (numbered) {
+        if (inUl) { if (inSubUl){html+='</ul>';inSubUl=false;} html += '</ul>'; inUl = false; }
+        if (!inOl) { html += '<ol>'; inOl = true; }
+        html += `<li>${applyInline(numbered[1])}</li>`;
+        continue;
+      }
+
+      // Blank line
+      if (line.trim() === '') {
+        closeLists();
+        continue;
+      }
+
+      // Regular paragraph line
+      closeLists();
+      html += `<p>${applyInline(line)}</p>`;
+    }
+
+    closeLists();
+    return html;
+  }
+
+  function applyInline(text) {
     return text
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-      .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-      .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-      .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.+?)\*/g, "<em>$1</em>")
-      .replace(/`([^`]+)`/g, "<code>$1</code>")
-      .replace(/^\s*[-*]\s+(.+)$/gm, "<li>$1</li>")
-      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
-      .replace(/\n\n/g, "</p><p>")
-      .replace(/^(?!<[hul]|<\/[hul]|<li)(.+)$/gm, (m) => m.startsWith("<") ? m : m)
-      .replace(/^(.+)$(?!\n)/gm, (m) => m);
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,     '<em>$1</em>')
+      .replace(/`([^`]+)`/g,     '<code>$1</code>');
   }
 
   function addMessage(role, content) {
