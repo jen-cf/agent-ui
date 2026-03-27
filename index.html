@@ -56,7 +56,7 @@
 
     .gate-logo {
       width: 42px; height: 42px;
-      background: var(--accent);
+      background: #1a4a9f;
       border-radius: 50%;
       margin-bottom: 1.5rem;
       display: flex; align-items: center; justify-content: center;
@@ -109,7 +109,7 @@
     .btn-primary {
       width: 100%;
       padding: .75rem;
-      background: var(--accent);
+      background: #1a4a9f;
       color: white;
       border: none;
       border-radius: 10px;
@@ -117,10 +117,10 @@
       font-size: .95rem;
       font-weight: 500;
       cursor: pointer;
-      transition: opacity .15s, transform .1s;
+      transition: background .2s, transform .1s;
     }
 
-    .btn-primary:hover { opacity: .9; }
+    .btn-primary:hover { background: #0f2d6b; }
     .btn-primary:active { transform: scale(.98); }
     .btn-primary:disabled { opacity: .5; cursor: default; }
 
@@ -337,7 +337,7 @@
     #empty-state .big-icon svg { width: 22px; height: 22px; }
 
     #empty-state h2 { font-size: 1rem; font-weight: 500; color: var(--text); }
-    #empty-state p  { font-size: .85rem; line-height: 1.5; max-width: 280px; }
+    #empty-state p  { font-size: .85rem; line-height: 1.5; max-width: 420px; }
 
     .suggestion-chips {
       display: flex; flex-direction: column; gap: .5rem;
@@ -357,8 +357,14 @@
     }
 
     .chip:hover {
-      border-color: var(--accent);
-      background: var(--accent-dim);
+      border-color: #0f2d6b;
+      background: #0f2d6b;
+      color: white;
+    }
+
+    .followup-chip:hover {
+      border-color: #0f2d6b;
+      background: #0f2d6b;
       color: white;
     }
 
@@ -408,7 +414,7 @@
       transition: opacity .15s, transform .1s;
     }
 
-    #send-btn:hover { opacity: .85; }
+    #send-btn:hover { background: #0f2d6b; opacity: 1; }
     #send-btn:active { transform: scale(.93); }
     #send-btn:disabled { opacity: .35; cursor: default; }
     #send-btn svg { width: 16px; height: 16px; fill: white; }
@@ -444,14 +450,14 @@
       </svg>
     </div>
     <h1>Draft EIR Agent</h1>
-    <p>Enter your credentials to access the assistant.</p>
+    <p>Enter your credentials to log in.</p>
     <label for="username-input">Username</label>
     <input type="text" id="username-input" placeholder="username" autocomplete="username"
       onkeydown="if(event.key==='Enter') document.getElementById('pw-input').focus()">
     <label for="pw-input">Password</label>
     <input type="password" id="pw-input" placeholder="••••••••" autocomplete="current-password"
       onkeydown="if(event.key==='Enter') checkPassword()">
-    <button class="btn-primary" id="login-btn" onclick="checkPassword()">Continue</button>
+    <button class="btn-primary" id="login-btn" onclick="checkPassword()">Log in</button>
     <p class="gate-error" id="pw-error">Incorrect username or password — try again.</p>
   </div>
 </div>
